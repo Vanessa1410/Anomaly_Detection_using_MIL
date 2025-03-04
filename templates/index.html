@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Anomaly Detection</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #ffecec;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: rgba(255, 248, 248, 0.9);
+            border: 2px solid #f54746;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(245, 71, 70, 0.3);
+            width: 90%;
+            max-width: 700px;
+            padding: 60px 30px 40px;
+            text-align: center;
+            position: relative;
+        }
+        .title-box {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f54746;
+            color: white;
+            padding: 14px 35px;
+            font-size: 2rem;
+            font-weight: bold;
+            border-radius: 12px;
+            white-space: nowrap;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        form input[type="file"] {
+            padding: 12px;
+            margin-bottom: 18px;
+            border: 2px solid #f54746;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 420px;
+        }
+        form button {
+            background-color: #f54746;
+            color: white;
+            padding: 14px 30px;
+            font-size: 1.3rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            padding: 5px;
+            margin-top: 20px;
+            display: none;
+        }
+        .progress-bar {
+            height: 30px;
+            width: 0%;
+            background-color: #f54746;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        .processing-text {
+            margin-top: 10px;
+            font-size: 1.2rem;
+            color: #f54746;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title-box">Video Anomaly Detection</div>
+        <div id="uploadSection">
+            <form id="uploadForm">
+                <label for="video">Upload a video (MP4/AVI):</label>
+                <input type="file" name="video" id="video" accept=".mp4,.avi" required>
+                <button type="button" onclick="uploadVideo()">Upload</button>
+            </form>
+        </div>
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar">0%</div>
+        </div>
+        <p class="processing-text" id="processingText">Processing video, please wait...</p>
+    </div>
+    <script>
+        async function uploadVideo() {
+            const videoInput = document.getElementById("video");
+            if (videoInput.files.length === 0) {
+                alert("Please select a video file.");
+                return;
+            }
+    
+            document.getElementById("uploadSection").style.display = "none";
+            document.getElementById("progressContainer").style.display = "flex";
+            document.getElementById("processingText").style.display = "block";
+    
+            const file = videoInput.files[0];
+            const formData = new FormData();
+            formData.append("video", file);
+    
+            try {
+                const response = await fetch("/upload", {
+                    method: "POST",
+                    body: formData
+                });
+    
+                const result = await response.json();
+    
+                if (response.ok && result.status === "uploaded") {
+                    updateProgress(result.filename);
+                } else {
+                    alert("Upload failed: " + result.message);
+                    location.reload();
+                }
+            } catch (error) {
+                alert("Error: " + error.message);
+                console.error(error);
+                location.reload();
+            }
+        }
+    
+        async function updateProgress(filename) {
+            const progressBar = document.getElementById("progressBar");
+            
+            while (true) {
+                const response = await fetch(`/processing-status/${filename}`);
+                const data = await response.json();
+    
+                if (data.status === "complete") {
+                    progressBar.style.width = "100%";
+                    progressBar.textContent = "100%";
+                    window.location.href = `/results/${filename}`;
+                    break;
+                } else if (data.status === "error") {
+                    alert("Error during processing.");
+                    location.reload();
+                    break;
+                } else {
+                    progressBar.style.width = data.progress + "%";
+                    progressBar.textContent = data.progress + "%";
+                }
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Poll every 2s
+            }
+        }
+    </script>
+    
+</body>
+</html>

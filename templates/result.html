@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classification Results</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #ffecec; /* Soft pastel background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ensuring full visibility */
+            padding: 30px 20px; /* More padding for better spacing */
+        }
+        .container {
+            background: #fff8f8; /* Light pastel background */
+            border: 2px solid #f54746; /* Theme border */
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(245, 71, 70, 0.3); /* Soft shadow */
+            width: 90%; /* Increased width */
+            max-width: 800px; /* Made it wider */
+            padding: 40px 20px 20px; /* More top padding to fit the title */
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+            color: #333;
+            position: relative;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .title-box {
+            position: absolute;
+            top: -30px; /* Increased gap between title and container */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f54746;
+            color: white;
+            padding: 12px 25px; /* Increased padding for better appearance */
+            font-size: 1.8rem; /* Slightly larger title */
+            font-weight: bold;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(245, 71, 70, 0.3);
+        }
+        video {
+            width: 100%;
+            max-width: 600px; /* Adjusted for larger container */
+            margin: 20px auto;
+            border: 2px solid #f54746;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(245, 71, 70, 0.2);
+        }
+        .results {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .results p {
+            margin: 10px 0;
+        }
+        .results p strong {
+            color: #f54746;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            background-color: #f54746;
+            color: white;
+            padding: 12px 25px; /* Slightly larger button */
+            font-size: 1.2rem;
+            border-radius: 8px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        a:hover {
+            background-color: #d93e3e;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title-box">Classification Results</div>  <!-- Title with more gap -->
+        <video width="640" height="360" controls>
+            <source src="{{ url_for('uploaded_file', filename=filename) }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="results">
+            <p><strong>Filename:</strong> {{ filename }}</p>
+            <p><strong>Anomaly Detected:</strong> {{ "Yes" if anomaly_detected else "No" }}</p>
+
+            {% if anomaly_detected %}
+                <h3>Subtype Classification</h3>
+                <p><strong>Predicted Subtype:</strong> {{ predicted_subtype }}</p>
+            {% endif %}
+        </div>
+        <a href="{{ url_for('index') }}">Go Back</a>
+    </div>
+</body>
+</html>
